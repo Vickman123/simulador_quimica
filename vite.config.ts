@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import path from 'path';
 
 export default defineConfig({
+  base: './',
   resolve: {
     alias: {
       '@vcl/shared': path.resolve(__dirname, 'packages/shared/src/index.ts'),
