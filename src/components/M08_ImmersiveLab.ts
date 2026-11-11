@@ -32,7 +32,7 @@ export class ImmersiveLab {
 
   public render(): void {
     this.container.innerHTML = `
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; min-height: calc(100vh - 120px); align-items: center;">
+      <div class="vcl-layout-split">
         <!-- Panel Izquierdo: Lanzador y Estado -->
         <div class="vcl-card" style="padding: 2.5rem; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
           <div>

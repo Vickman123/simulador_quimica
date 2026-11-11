@@ -42,7 +42,7 @@ export class BondStudio {
     const currentBadge = typeBadges[analysis.bondType] || { label: analysis.bondType, color: '#64748b' };
 
     this.container.innerHTML = `
-      <div style="display: grid; grid-template-columns: 340px 1fr; gap: 1.5rem; min-height: calc(100vh - 120px);">
+      <div class="vcl-layout-2col">
         <!-- Panel de Configuración de Enlace -->
         <div class="vcl-card" style="display: flex; flex-direction: column; justify-content: space-between;">
           <div>

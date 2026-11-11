@@ -4,7 +4,7 @@
  *
  * Estación de trabajo de laboratorio físico 3D con mesa óptica de confinamiento,
  * motor de identificación de entidades químicas en tiempo real, optimización VSEPR 3D,
- * balance de enlaces/octeto y visualización molecular fotorrealista.
+ * balance de enlaces/octeto, navegación por pestañas ergonómicas y diseño responsive para PC.
  */
 
 import { MolecularRenderer } from '@vcl/molecular-renderer';
@@ -28,12 +28,13 @@ export class MolecularBuilder {
   private selectedAtom: AtomInstance | null = null;
   private selectedPaletteElement: string = 'C';
   private selectedBondOrder: 1 | 2 | 3 = 1;
+  private activeRightTab: 'substance' | 'inspection' = 'substance';
   private onLaunchXR?: () => void;
 
   constructor(container: HTMLElement, onLaunchXR?: () => void) {
     this.container = container;
     this.onLaunchXR = onLaunchXR;
-    // Cargar Dióxido de Carbono o Agua con estructura optimizada por defecto
+    // Iniciar con Dióxido de Carbono balanceado por defecto
     this.currentMolecule = JSON.parse(JSON.stringify(STANDARD_MOLECULES.CO2 || STANDARD_MOLECULES.H2O));
     this.render();
   }
@@ -48,9 +49,9 @@ export class MolecularBuilder {
         <div class="vcl-card vcl-builder-palette vcl-lab-rack">
           <div class="vcl-rack-header">
             <div class="vcl-badge-lab">
-              <span class="vcl-led-active"></span> DISPENSADOR ATÓMICO
+              <span class="vcl-led-active"></span> REACTIVOS CPK
             </div>
-            <h4 class="vcl-lab-title">Gradilla de Elementos</h4>
+            <h4 class="vcl-lab-title">Gradilla de Átomos</h4>
           </div>
 
           <!-- Paleta de Reactivos Rápidos CPK -->
@@ -60,10 +61,10 @@ export class MolecularBuilder {
               const isSelected = this.selectedPaletteElement === sym;
               return `
                 <button class="vcl-vial-btn ${isSelected ? 'active' : ''} btn-palette-el" data-symbol="${sym}" title="${el?.name || sym} (Z=${el?.atomicNumber})">
-                  <div class="vcl-vial-color" style="background: ${el?.colorHex || '#fff'}; box-shadow: 0 0 8px ${el?.colorHex || '#fff'}80;"></div>
+                  <div class="vcl-vial-color" style="background: ${el?.colorHex || '#fff'}; box-shadow: 0 0 6px ${el?.colorHex || '#fff'}99;"></div>
                   <div class="vcl-vial-info">
                     <span class="vcl-vial-sym">${sym}</span>
-                    <span class="vcl-vial-name">${el?.name.slice(0, 6)}</span>
+                    <span class="vcl-vial-name">${el?.name.slice(0, 5)}</span>
                   </div>
                 </button>
               `;
@@ -84,40 +85,35 @@ export class MolecularBuilder {
 
           <!-- Selector de Orden de Enlace para Próximas Conexiones -->
           <div class="vcl-bond-order-picker">
-            <label class="vcl-lab-field-label">TIPO DE ENLACE A FORMAR</label>
-            <div class="vcl-btn-group">
-              <button class="vcl-btn-bond-order ${this.selectedBondOrder === 1 ? 'active' : ''}" data-order="1">
-                <span>Simple (—)</span>
-              </button>
-              <button class="vcl-btn-bond-order ${this.selectedBondOrder === 2 ? 'active' : ''}" data-order="2">
-                <span>Doble (=)</span>
-              </button>
-              <button class="vcl-btn-bond-order ${this.selectedBondOrder === 3 ? 'active' : ''}" data-order="3">
-                <span>Triple (≡)</span>
-              </button>
+            <label class="vcl-lab-field-label">ORDEN DE ENLACE</label>
+            <div class="vcl-bond-order-segmented">
+              <button class="vcl-btn-bond-order ${this.selectedBondOrder === 1 ? 'active' : ''}" data-order="1">Simple (—)</button>
+              <button class="vcl-btn-bond-order ${this.selectedBondOrder === 2 ? 'active' : ''}" data-order="2">Doble (=)</button>
+              <button class="vcl-btn-bond-order ${this.selectedBondOrder === 3 ? 'active' : ''}" data-order="3">Triple (≡)</button>
             </div>
           </div>
         </div>
 
         <!-- 2. ÁREA CENTRAL: BANCO ÓPTICO 3D Y MESA DE CONFINAMIENTO -->
         <div class="vcl-builder-canvas-container" id="builder-canvas-box">
-          <!-- Banner Superior de Telemetría e Identificación en Tiempo Real -->
-          <div class="vcl-lab-hud-top">
-            <div class="vcl-hud-chip vcl-hud-id" id="hud-substance-banner">
+          <!-- Banner Superior Compacto de Telemetría e Identificación -->
+          <div class="vcl-canvas-hud-bar">
+            <div class="vcl-hud-tag-id">
               <span class="vcl-led-id ${this.currentMolecule.atoms.length > 0 ? 'identified' : ''}"></span>
-              <span class="vcl-hud-substance-name" id="canvas-substance-name">
-                ${substance.name} (${this.currentMolecule.formula || 'Vacía'})
-              </span>
+              <strong id="canvas-substance-name">${substance.name}</strong>
+              <span class="vcl-hud-formula" id="canvas-formula-code">(${this.currentMolecule.formula || 'Vacía'})</span>
             </div>
-            <div class="vcl-hud-chip" id="hud-geometry-badge">
-              <span class="vcl-hud-lbl">GEOMETRÍA:</span>
-              <span class="vcl-hud-val" id="canvas-geometry-text" style="color: var(--accent-gold); text-transform: uppercase;">
+            <div class="vcl-hud-divider"></div>
+            <div class="vcl-hud-metric">
+              <span class="vcl-hud-k">GEOMETRÍA:</span>
+              <span class="vcl-hud-v" id="canvas-geometry-text" style="color: var(--accent-gold); text-transform: uppercase;">
                 ${this.currentMolecule.geometryVSEPR || 'Calculando'}
               </span>
             </div>
-            <div class="vcl-hud-chip">
-              <span class="vcl-hud-lbl">MASA:</span>
-              <span class="vcl-hud-val" id="canvas-mass-text">${this.currentMolecule.molarMass} g/mol</span>
+            <div class="vcl-hud-divider"></div>
+            <div class="vcl-hud-metric">
+              <span class="vcl-hud-k">MASA:</span>
+              <span class="vcl-hud-v" id="canvas-mass-text">${this.currentMolecule.molarMass} g/mol</span>
             </div>
           </div>
 
@@ -142,9 +138,24 @@ export class MolecularBuilder {
           </div>
         </div>
 
-        <!-- 3. PANEL DERECHO: CONSOLA DE INSTRUMENTACIÓN ANALÍTICA -->
-        <div class="vcl-card vcl-builder-properties vcl-lab-console" id="builder-properties-panel">
-          <!-- Renderizado dinámico de la consola espectrométrica -->
+        <!-- 3. PANEL DERECHO: CONSOLA DE INSTRUMENTACIÓN ANALÍTICA CON PESTAÑAS -->
+        <div class="vcl-card vcl-builder-properties vcl-lab-console">
+          <!-- Pestañas Superiores de la Consola -->
+          <div class="vcl-panel-tabs">
+            <button class="vcl-panel-tab ${this.activeRightTab === 'substance' ? 'active' : ''}" data-ptab="substance">
+              <span>🔬</span>
+              <span>Sustancia</span>
+            </button>
+            <button class="vcl-panel-tab ${this.activeRightTab === 'inspection' ? 'active' : ''}" data-ptab="inspection">
+              <span>📐</span>
+              <span>Estructura (${this.currentMolecule.atoms.length} át.)</span>
+            </button>
+          </div>
+
+          <!-- Contenedor dinámico de pestañas -->
+          <div id="builder-properties-panel" class="vcl-tab-pane-container">
+            <!-- Renderizado dinámico de la pestaña activa -->
+          </div>
         </div>
 
         <!-- 4. PANEL INFERIOR: BANCO DE TRABAJO Y HERRAMIENTAS TÁCTILES -->
@@ -164,18 +175,18 @@ export class MolecularBuilder {
             </button>
             <button class="vcl-btn vcl-btn-secondary vcl-btn-tactile" id="btn-clear-molecule" title="Vaciar la mesa de trabajo">
               <span class="vcl-btn-icon">↺</span>
-              <span>Limpiar Mesa</span>
+              <span>Limpiar</span>
             </button>
           </div>
 
           <!-- Modos de Representación Molecular -->
           <div class="vcl-toolbar-group vcl-rep-selector">
-            <span class="vcl-toolbar-lbl">REPRESENTACIÓN:</span>
+            <span class="vcl-toolbar-lbl">ESTILO:</span>
             <button class="vcl-btn ${this.currentRepresentation === 'ball-and-stick' ? 'vcl-btn-primary' : 'vcl-btn-secondary'} btn-rep" data-rep="ball-and-stick">
               Ball & Stick
             </button>
             <button class="vcl-btn ${this.currentRepresentation === 'space-filling' ? 'vcl-btn-primary' : 'vcl-btn-secondary'} btn-rep" data-rep="space-filling">
-              Space Filling (CPK)
+              Space Filling
             </button>
             <button class="vcl-btn ${this.currentRepresentation === 'wireframe' ? 'vcl-btn-primary' : 'vcl-btn-secondary'} btn-rep" data-rep="wireframe">
               Wireframe
@@ -184,8 +195,8 @@ export class MolecularBuilder {
 
           <!-- Cargar Sustancias Estándar Preestablecidas -->
           <div class="vcl-toolbar-group">
-            <span class="vcl-toolbar-lbl">ESPÉCIMEN PREESTABLECIDO:</span>
-            <select id="builder-presets-select" class="vcl-input-search vcl-lab-select" style="min-width: 190px;">
+            <span class="vcl-toolbar-lbl">PRESET:</span>
+            <select id="builder-presets-select" class="vcl-input-search vcl-lab-select" style="min-width: 170px;">
               <option value="CO2" selected>Dióxido de Carbono (CO2)</option>
               <option value="H2O">Agua (H2O)</option>
               <option value="CH4">Metano (CH4)</option>
@@ -226,6 +237,8 @@ export class MolecularBuilder {
     this.renderer3D.onAtomSelect = (atom) => {
       labAudio.playClick();
       this.selectedAtom = atom;
+      this.activeRightTab = 'inspection';
+      this.updateRightTabButtons();
       this.updatePropertiesPanel();
       eventBus.emit('lab:notification', {
         title: `Átomo Seleccionado: ${atom.symbol}`,
@@ -235,6 +248,18 @@ export class MolecularBuilder {
     };
 
     this.renderer3D.setMolecule(this.currentMolecule);
+  }
+
+  private updateRightTabButtons(): void {
+    const tabs = this.container.querySelectorAll('.vcl-panel-tab');
+    tabs.forEach((tab) => {
+      const ptab = tab.getAttribute('data-ptab');
+      if (ptab === this.activeRightTab) {
+        tab.classList.add('active');
+      } else {
+        tab.classList.remove('active');
+      }
+    });
   }
 
   /**
@@ -247,142 +272,142 @@ export class MolecularBuilder {
     const substance = SubstanceIdentifier.identify(this.currentMolecule);
     const validation = ValidationEngine.validateMolecule(this.currentMolecule);
 
-    // Detección de sugerencia de octeto (ej: enlaces simples en CO2 que deberían ser dobles)
     const needsOctetFix =
       substance.formula === 'CO2' &&
       this.currentMolecule.bonds.some((b) => b.order === 1);
 
-    panel.innerHTML = `
-      <!-- Cabecera de la Consola -->
-      <div class="vcl-console-top-strip">
-        <span class="vcl-badge-lab">ESPECTRÓMETRO DIGITAL</span>
-        <span class="vcl-console-status">EN LÍNEA</span>
-      </div>
-
-      <!-- Tarjeta Principal de Identificación Química -->
-      <div class="vcl-substance-id-card">
-        <div class="vcl-substance-header">
-          <div class="vcl-substance-flag">
-            <span class="vcl-pulse-dot"></span> SUSTANCIA IDENTIFICADA
-          </div>
-          <h3 class="vcl-substance-title">${substance.name}</h3>
-          <div class="vcl-substance-formula">${this.currentMolecule.formula || 'Vacía'}</div>
-        </div>
-
-        <div class="vcl-substance-meta">
-          <div class="vcl-meta-row">
-            <span class="vcl-meta-k">Nombre IUPAC:</span>
-            <span class="vcl-meta-v">${substance.iupacName}</span>
-          </div>
-          <div class="vcl-meta-row">
-            <span class="vcl-meta-k">Familia Química:</span>
-            <span class="vcl-meta-v">${substance.family}</span>
-          </div>
-          <div class="vcl-meta-row">
-            <span class="vcl-meta-k">Estado a 25°C:</span>
-            <span class="vcl-meta-v">${substance.stateAt25C}</span>
-          </div>
-          <div class="vcl-meta-row">
-            <span class="vcl-meta-k">Momento Dipolar:</span>
-            <span class="vcl-meta-v">${substance.dipoleMoment}</span>
-          </div>
-          <div class="vcl-meta-row">
-            <span class="vcl-meta-k">Ángulos Teóricos:</span>
-            <span class="vcl-meta-v" style="color: var(--accent-gold);">${substance.bondAngles}</span>
-          </div>
-        </div>
-
-        <p class="vcl-substance-desc">${substance.description}</p>
-      </div>
-
-      <!-- Sugerencia de Octeto Inteligente -->
-      ${needsOctetFix ? `
-        <div class="vcl-alert-box-warning" style="margin-bottom: 1rem;">
-          <div style="font-weight: 700; color: #f59e0b; margin-bottom: 0.3rem;">⚡ Ajuste de Enlaces Pendiente</div>
-          <p style="font-size: 0.78rem; color: #fef3c7; line-height: 1.4; margin-bottom: 0.5rem;">
-            En el dióxido de carbono ($CO_2$), los átomos de carbono y oxígeno forman enlaces covalentes dobles ($O=C=O$) para completar sus octetos.
-          </p>
-          <button class="vcl-btn vcl-btn-primary" id="btn-fix-octet-quick" style="width: 100%; font-size: 0.8rem; padding: 0.4rem;">
-            <span>⚡ Elevar a Enlaces Dobles (O=C=O)</span>
-          </button>
-        </div>
-      ` : ''}
-
-      <!-- Constantes Físico-Químicas -->
-      <div class="vcl-instruments-grid">
-        <div class="vcl-instrument-readout">
-          <div class="vcl-inst-lbl">Masa Molar</div>
-          <div class="vcl-inst-val">${this.currentMolecule.molarMass} <span class="vcl-unit">g/mol</span></div>
-        </div>
-        <div class="vcl-instrument-readout">
-          <div class="vcl-inst-lbl">Geometría VSEPR</div>
-          <div class="vcl-inst-val" style="color: var(--accent-cyan); text-transform: capitalize;">
-            ${this.currentMolecule.geometryVSEPR || 'No calculada'}
-          </div>
-        </div>
-      </div>
-
-      <!-- Diagnóstico de Validación Estructural -->
-      <div class="vcl-validation-card ${validation.isValid ? 'valid' : 'invalid'}">
-        <div class="vcl-validation-title">
-          ${validation.isValid ? '✓ Estructura Válida según Reglas de Valencia' : '⚠ Diagnóstico de Conectividad'}
-        </div>
-        ${validation.errors.map((e) => `<p class="vcl-val-err">• ${e}</p>`).join('')}
-        ${validation.warnings.map((w) => `<p class="vcl-val-warn">• ${w}</p>`).join('')}
-      </div>
-
-      <!-- Átomo Seleccionado -->
-      <div class="vcl-console-section">
-        <h4 class="vcl-section-heading">Átomo en Observación</h4>
-        ${this.selectedAtom ? `
-          <div class="vcl-atom-details-card">
-            <div class="vcl-atom-detail-line">
-              <span class="vcl-meta-k">Elemento:</span>
-              <strong style="color: var(--accent-cyan); font-size: 0.95rem;">${this.selectedAtom.symbol} (Z = ${this.selectedAtom.atomicNumber})</strong>
+    if (this.activeRightTab === 'substance') {
+      panel.innerHTML = `
+        <div class="vcl-substance-id-card">
+          <div class="vcl-substance-header">
+            <div class="vcl-substance-flag">
+              <span class="vcl-pulse-dot"></span> SUSTANCIA RECONOCIDA
             </div>
-            <div class="vcl-atom-detail-line">
-              <span class="vcl-meta-k">Coordenadas [X, Y, Z]:</span>
-              <span class="vcl-mono-coords">[${this.selectedAtom.position.map((v) => v.toFixed(2)).join(', ')}] Å</span>
+            <h3 class="vcl-substance-title">${substance.name}</h3>
+            <div class="vcl-substance-formula">${this.currentMolecule.formula || 'Vacía'}</div>
+          </div>
+
+          <div class="vcl-substance-meta">
+            <div class="vcl-meta-row">
+              <span class="vcl-meta-k">Nombre IUPAC:</span>
+              <span class="vcl-meta-v">${substance.iupacName}</span>
             </div>
-            <div class="vcl-atom-detail-line">
-              <span class="vcl-meta-k">Carga Formal:</span>
-              <span style="color: #ffffff;">${this.selectedAtom.formalCharge}</span>
+            <div class="vcl-meta-row">
+              <span class="vcl-meta-k">Familia Química:</span>
+              <span class="vcl-meta-v">${substance.family}</span>
+            </div>
+            <div class="vcl-meta-row">
+              <span class="vcl-meta-k">Estado a 25°C:</span>
+              <span class="vcl-meta-v">${substance.stateAt25C}</span>
+            </div>
+            <div class="vcl-meta-row">
+              <span class="vcl-meta-k">Momento Dipolar:</span>
+              <span class="vcl-meta-v">${substance.dipoleMoment}</span>
+            </div>
+            <div class="vcl-meta-row">
+              <span class="vcl-meta-k">Ángulos Teóricos:</span>
+              <span class="vcl-meta-v" style="color: var(--accent-gold);">${substance.bondAngles}</span>
             </div>
           </div>
-        ` : `
-          <div class="vcl-empty-atom-hint">
-            Haz clic directamente en un átomo sobre la mesa 3D para inspeccionar sus coordenadas y estados.
-          </div>
-        `}
-      </div>
 
-      <!-- Enlaces Químicos y Control de Orden -->
-      <div class="vcl-console-section">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-          <h4 class="vcl-section-heading" style="margin: 0;">Enlaces (${this.currentMolecule.bonds.length})</h4>
-          <span style="font-size: 0.7rem; color: var(--text-dim);">(Clic para alternar orden)</span>
+          <p class="vcl-substance-desc">${substance.description}</p>
         </div>
-        <div class="vcl-bonds-list">
-          ${this.currentMolecule.bonds.length === 0 ? `
-            <div style="font-size: 0.75rem; color: var(--text-dim); padding: 0.5rem 0;">No hay enlaces formados. Haz clic en "Crear Enlace".</div>
-          ` : this.currentMolecule.bonds.map((b) => `
-            <div class="vcl-bond-item-row" data-bond-id="${b.id}" title="Clic para alternar entre enlace simple, doble y triple">
-              <div class="vcl-bond-atoms">
-                <strong>${b.atomAId.split('_')[0]}</strong>
-                <span class="vcl-bond-order-badge">${b.order === 3 ? '≡ Triple' : b.order === 2 ? '= Doble' : '— Simple'}</span>
-                <strong>${b.atomBId.split('_')[0]}</strong>
+
+        ${needsOctetFix ? `
+          <div class="vcl-alert-box-warning" style="margin-top: 0.8rem;">
+            <div style="font-weight: 700; color: #f59e0b; margin-bottom: 0.25rem;">⚡ Ajuste de Enlaces Pendiente</div>
+            <p style="font-size: 0.76rem; color: #fef3c7; line-height: 1.4; margin-bottom: 0.45rem;">
+              En el dióxido de carbono ($CO_2$), los enlaces deben ser dobles ($O=C=O$) para completar sus octetos.
+            </p>
+            <button class="vcl-btn vcl-btn-primary" id="btn-fix-octet-quick" style="width: 100%; font-size: 0.78rem; padding: 0.35rem;">
+              <span>⚡ Elevar a Enlaces Dobles (O=C=O)</span>
+            </button>
+          </div>
+        ` : ''}
+      `;
+    } else {
+      // Pestaña de Inspección Estructural
+      panel.innerHTML = `
+        <!-- Constantes Físico-Químicas -->
+        <div class="vcl-instruments-grid">
+          <div class="vcl-instrument-readout">
+            <div class="vcl-inst-lbl">Masa Molar</div>
+            <div class="vcl-inst-val">${this.currentMolecule.molarMass} <span class="vcl-unit">g/mol</span></div>
+          </div>
+          <div class="vcl-instrument-readout">
+            <div class="vcl-inst-lbl">Geometría VSEPR</div>
+            <div class="vcl-inst-val" style="color: var(--accent-cyan); text-transform: capitalize;">
+              ${this.currentMolecule.geometryVSEPR || 'No calculada'}
+            </div>
+          </div>
+        </div>
+
+        <!-- Diagnóstico de Validación -->
+        <div class="vcl-validation-card ${validation.isValid ? 'valid' : 'invalid'}">
+          <div class="vcl-validation-title">
+            ${validation.isValid ? '✓ Estructura Válida según Valencia' : '⚠ Diagnóstico de Conectividad'}
+          </div>
+          ${validation.errors.map((e) => `<p class="vcl-val-err">• ${e}</p>`).join('')}
+          ${validation.warnings.map((w) => `<p class="vcl-val-warn">• ${w}</p>`).join('')}
+        </div>
+
+        <!-- Átomo Seleccionado -->
+        <div class="vcl-console-section" style="border-top: none; padding-top: 0;">
+          <h4 class="vcl-section-heading">Átomo en Observación</h4>
+          ${this.selectedAtom ? `
+            <div class="vcl-atom-details-card">
+              <div class="vcl-atom-detail-line">
+                <span class="vcl-meta-k">Elemento:</span>
+                <strong style="color: var(--accent-cyan);">${this.selectedAtom.symbol} (Z = ${this.selectedAtom.atomicNumber})</strong>
               </div>
-              <div class="vcl-bond-length">${b.length?.toFixed(2) ?? '-'} Å</div>
+              <div class="vcl-atom-detail-line">
+                <span class="vcl-meta-k">Coordenadas:</span>
+                <span class="vcl-mono-coords">[${this.selectedAtom.position.map((v) => v.toFixed(2)).join(', ')}] Å</span>
+              </div>
+              <div class="vcl-atom-detail-line">
+                <span class="vcl-meta-k">Carga Formal:</span>
+                <span style="color: #ffffff;">${this.selectedAtom.formalCharge}</span>
+              </div>
             </div>
-          `).join('')}
+          ` : `
+            <div class="vcl-empty-atom-hint">
+              Haz clic en un átomo en la mesa 3D para examinar sus datos.
+            </div>
+          `}
         </div>
-      </div>
-    `;
+
+        <!-- Enlaces Químicos y Control de Orden -->
+        <div class="vcl-console-section">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <h4 class="vcl-section-heading" style="margin: 0;">Enlaces (${this.currentMolecule.bonds.length})</h4>
+            <span style="font-size: 0.68rem; color: var(--text-dim);">(Clic para alternar orden)</span>
+          </div>
+          <div class="vcl-bonds-list">
+            ${this.currentMolecule.bonds.length === 0 ? `
+              <div style="font-size: 0.74rem; color: var(--text-dim); padding: 0.3rem 0;">No hay enlaces formados. Haz clic en "Crear Enlace".</div>
+            ` : this.currentMolecule.bonds.map((b) => `
+              <div class="vcl-bond-item-row" data-bond-id="${b.id}" title="Clic para alternar entre enlace simple, doble y triple">
+                <div class="vcl-bond-atoms">
+                  <strong>${b.atomAId.split('_')[0]}</strong>
+                  <span class="vcl-bond-order-badge">${b.order === 3 ? '≡ Triple' : b.order === 2 ? '= Doble' : '— Simple'}</span>
+                  <strong>${b.atomBId.split('_')[0]}</strong>
+                </div>
+                <div class="vcl-bond-length">${b.length?.toFixed(2) ?? '-'} Å</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
 
     // Actualizar badges superiores del HUD 3D
     const formulaBadge = this.container.querySelector('#canvas-substance-name');
     if (formulaBadge) {
-      formulaBadge.textContent = `${substance.name} (${this.currentMolecule.formula || 'Vacía'})`;
+      formulaBadge.textContent = substance.name;
+    }
+    const formulaCode = this.container.querySelector('#canvas-formula-code');
+    if (formulaCode) {
+      formulaCode.textContent = `(${this.currentMolecule.formula || 'Vacía'})`;
     }
     const geomBadge = this.container.querySelector('#canvas-geometry-text');
     if (geomBadge) {
@@ -418,6 +443,19 @@ export class MolecularBuilder {
   }
 
   private setupEventListeners(): void {
+    // Pestañas del panel derecho
+    this.container.querySelectorAll('.vcl-panel-tab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        labAudio.playClick();
+        const ptab = tab.getAttribute('data-ptab') as 'substance' | 'inspection';
+        if (ptab) {
+          this.activeRightTab = ptab;
+          this.updateRightTabButtons();
+          this.updatePropertiesPanel();
+        }
+      });
+    });
+
     // Selección de elemento en la paleta rápida
     this.container.querySelectorAll('.btn-palette-el').forEach((btn) => {
       btn.addEventListener('click', () => {

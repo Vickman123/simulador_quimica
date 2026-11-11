@@ -38,7 +38,7 @@ export class ReactionLab {
     };
 
     this.container.innerHTML = `
-      <div style="display: grid; grid-template-columns: 360px 1fr; gap: 1.5rem; min-height: calc(100vh - 120px);">
+      <div class="vcl-layout-2col">
         <!-- Panel Izquierdo: Catálogo y Balanceador de Reacciones -->
         <div class="vcl-card" style="display: flex; flex-direction: column; justify-content: space-between;">
           <div>

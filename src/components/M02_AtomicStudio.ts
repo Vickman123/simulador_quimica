@@ -39,7 +39,7 @@ export class AtomicStudio {
     const activeModelInfo: AtomicModelInfo = models[this.currentModel];
 
     this.container.innerHTML = `
-      <div style="display: grid; grid-template-columns: 340px 1fr 340px; gap: 1.25rem; min-height: calc(100vh - 120px);">
+      <div class="vcl-layout-3col">
         <!-- Panel Izquierdo: Controles Subatómicos -->
         <div class="vcl-card" style="display: flex; flex-direction: column; justify-content: space-between;">
           <div>

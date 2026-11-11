@@ -24,7 +24,7 @@ export class EnergyForces {
     const curve: BondEnergyCurve = curves[this.currentCurveKey] || curves['O-H'];
 
     this.container.innerHTML = `
-      <div style="display: grid; grid-template-columns: 340px 1fr; gap: 1.5rem; min-height: calc(100vh - 120px);">
+      <div class="vcl-layout-2col">
         <!-- Panel Lateral: Configuración y Metrología -->
         <div class="vcl-card" style="display: flex; flex-direction: column; justify-content: space-between;">
           <div>
