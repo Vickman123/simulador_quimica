@@ -1,0 +1,35 @@
+{
+  "name": "virtual-chemistry-lab",
+  "version": "1.0.0",
+  "description": "VIRTUAL CHEMISTRY LAB (VCL) — Plataforma Científica Educativa de Simulación Química 2D/3D/WebXR para Meta Quest 3S y Web",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "node --test --import tsx tests/**/*.test.ts || npx vitest run",
+    "test:unit": "npx vitest run"
+  },
+  "keywords": [
+    "chemistry",
+    "simulation",
+    "webxr",
+    "threejs",
+    "meta-quest-3s",
+    "education",
+    "vickora-labs"
+  ],
+  "author": "Vickora Labs & Vickman123",
+  "license": "MIT",
+  "dependencies": {
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/three": "^0.187.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.0",
+    "vitest": "^3.0.7"
+  }
+}

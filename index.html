@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>VIRTUAL CHEMISTRY LAB (VCL) — Vickora Labs</title>
+  <meta name="description" content="Plataforma científica educativa de simulación química 2D, 3D y WebXR para Meta Quest 3S y navegadores web. Desarrollado por Vickora Labs.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='42' fill='%230f172a' stroke='%2338bdf8' stroke-width='6'/><circle cx='50' cy='50' r='14' fill='%2338bdf8'/><circle cx='28' cy='42' r='8' fill='%23ef4444'/><circle cx='72' cy='42' r='8' fill='%233b82f6'/><line x1='28' y1='42' x2='50' y2='50' stroke='%2394a3b8' stroke-width='3'/><line x1='72' y1='42' x2='50' y2='50' stroke='%2394a3b8' stroke-width='3'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/styles/main.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Navbar Superior -->
+    <header id="main-header" class="vcl-header"></header>
+
+    <!-- Contenedor Principal de Vistas -->
+    <main id="main-viewport" class="vcl-main-viewport"></main>
+
+    <!-- Modal de Ficha de Elemento / Notificaciones -->
+    <div id="vcl-modal-container" class="vcl-modal-overlay hidden"></div>
+
+    <!-- Toast Notification Container -->
+    <div id="vcl-toast-container" class="vcl-toast-container"></div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
