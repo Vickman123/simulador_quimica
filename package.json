@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "test": "node --test --import tsx tests/**/*.test.ts || npx vitest run",
-    "test:unit": "npx vitest run"
+    "test:unit": "npx vitest run",
+    "deploy": "npm run build && cd dist && git init && git add -A && git commit -m 'Deploy to GitHub Pages' && git branch -M gh-pages && git remote add origin git@github.com:Vickman123/simulador_quimica.git && git push -u origin gh-pages --force && rm -rf .git && cd .."
   },
   "keywords": [
     "chemistry",
