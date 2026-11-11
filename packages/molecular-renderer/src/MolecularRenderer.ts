@@ -3,8 +3,8 @@
  * Vickora Labs
  *
  * Motor de renderizado 3D de alta fidelidad basado en Three.js.
- * Administra escena molecular, modos de representación visual,
- * selección por raycasting y sombreado científico.
+ * Administra el escenario de laboratorio óptico, mesa de trabajo de confinamiento,
+ * modos de representación visual, sombras físicas de contacto y sombreado PBR científico.
  */
 
 import * as THREE from 'three';
@@ -21,6 +21,8 @@ export class MolecularRenderer {
   public readonly container: HTMLElement;
 
   private moleculeGroup: THREE.Group = new THREE.Group();
+  private benchGroup: THREE.Group = new THREE.Group();
+  private reticleRing: THREE.Mesh | null = null;
   private currentMolecule: MoleculeGraph | null = null;
   private representation: MolecularRepresentation = 'ball-and-stick';
 
@@ -30,11 +32,12 @@ export class MolecularRenderer {
 
   private hoveredMesh: THREE.Mesh | null = null;
   private selectedAtomId: string | null = null;
+  public autoRotate: boolean = true;
 
   public onAtomSelect?: AtomSelectCallback;
   public onBondSelect?: BondSelectCallback;
 
-  // Interacción orbital manual con ratón
+  // Interacción orbital manual con ratón / gestos
   private isDragging = false;
   private previousMousePosition = { x: 0, y: 0 };
   private animationFrameId: number | null = null;
@@ -45,14 +48,15 @@ export class MolecularRenderer {
 
     // 1. Configurar Escena
     this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(options.backgroundColor ?? 0x070b14);
+    this.scene.background = new THREE.Color(options.backgroundColor ?? 0x050811);
+    this.scene.fog = new THREE.FogExp2(0x050811, 0.04);
 
     // 2. Configurar Cámara
     const aspect = this.container.clientWidth / (this.container.clientHeight || 1);
     this.camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 100);
-    this.camera.position.set(0, 0, 6.5);
+    this.camera.position.set(0, 0.8, 6.2);
 
-    // 3. Configurar WebGLRenderer
+    // 3. Configurar WebGLRenderer con PBR y mapeo tonal cinematográfico
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
       powerPreference: 'high-performance',
@@ -61,7 +65,7 @@ export class MolecularRenderer {
     this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.1;
+    this.renderer.toneMappingExposure = 1.25;
 
     if (options.enableShadows !== false) {
       this.renderer.shadowMap.enabled = true;
@@ -70,41 +74,140 @@ export class MolecularRenderer {
 
     this.container.appendChild(this.renderer.domElement);
 
-    // 4. Iluminación de Estudio Científico
-    this.setupLighting();
+    // 4. Iluminación de Laboratorio Físico
+    this.setupLaboratoryLighting();
 
-    // 5. Añadir grupo principal de moléculas
+    // 5. Construir Mesa de Trabajo Óptica y Confinamiento Físico
+    this.buildLaboratoryWorkbench();
+
+    // 6. Añadir grupo principal de moléculas
     this.scene.add(this.moleculeGroup);
 
-    // 6. Controles de rotación y eventos de ratón
+    // 7. Controles de rotación y eventos de ratón
     this.setupMouseEvents();
 
-    // 7. Bucle de renderizado
+    // 8. Bucle de renderizado
     this.animate();
   }
 
-  private setupLighting(): void {
-    // Luz ambiental suave
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+  /**
+   * Configura la iluminación de estudio de laboratorio científico
+   */
+  private setupLaboratoryLighting(): void {
+    // Luz ambiental suave azulada de sala limpia
+    const ambientLight = new THREE.AmbientLight(0xdbeafe, 0.65);
     this.scene.add(ambientLight);
 
-    // Luz clave principal
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.4);
-    keyLight.position.set(5, 8, 6);
-    keyLight.castShadow = true;
-    keyLight.shadow.mapSize.width = 1024;
-    keyLight.shadow.mapSize.height = 1024;
-    this.scene.add(keyLight);
+    // Luz cenital principal (spotlight con sombras suaves)
+    const keySpot = new THREE.SpotLight(0xffffff, 2.5);
+    keySpot.position.set(2, 7, 4);
+    keySpot.angle = Math.PI / 4;
+    keySpot.penumbra = 0.5;
+    keySpot.castShadow = true;
+    keySpot.shadow.mapSize.width = 2048;
+    keySpot.shadow.mapSize.height = 2048;
+    keySpot.shadow.camera.near = 1;
+    keySpot.shadow.camera.far = 15;
+    keySpot.shadow.bias = -0.0001;
+    this.scene.add(keySpot);
 
-    // Luz de relleno azulada
-    const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.6);
-    fillLight.position.set(-6, -3, 4);
-    this.scene.add(fillLight);
+    // Luz de relleno cian del campo de confinamiento
+    const cyanFill = new THREE.DirectionalLight(0x38bdf8, 0.85);
+    cyanFill.position.set(-5, -1, 3);
+    this.scene.add(cyanFill);
 
-    // Luz de contra (rim light) para destacar bordes moleculares
-    const rimLight = new THREE.DirectionalLight(0xa855f7, 0.8);
-    rimLight.position.set(0, -6, -5);
+    // Luz de contra violeta / ultravioleta de fondo
+    const rimLight = new THREE.DirectionalLight(0x818cf8, 0.9);
+    rimLight.position.set(0, -4, -6);
     this.scene.add(rimLight);
+  }
+
+  /**
+   * Construye el pedestal / mesa óptica de experimentación de laboratorio
+   */
+  private buildLaboratoryWorkbench(): void {
+    this.benchGroup.name = 'Laboratory_Optical_Workbench';
+    const benchY = -2.2;
+
+    // 1. Encimera de la mesa de experimentación (titanio oscuro pulido)
+    const tableGeo = new THREE.CylinderGeometry(3.6, 3.8, 0.25, 48);
+    const tableMat = new THREE.MeshStandardMaterial({
+      color: 0x0f172a,
+      roughness: 0.35,
+      metalness: 0.85,
+    });
+    const table = new THREE.Mesh(tableGeo, tableMat);
+    table.position.set(0, benchY, 0);
+    table.receiveShadow = true;
+    this.benchGroup.add(table);
+
+    // 2. Plano receptor de sombras de contacto de los átomos
+    const shadowGeo = new THREE.PlaneGeometry(7.0, 7.0);
+    const shadowMat = new THREE.ShadowMaterial({ opacity: 0.45 });
+    const shadowPlane = new THREE.Mesh(shadowGeo, shadowMat);
+    shadowPlane.rotation.x = -Math.PI / 2;
+    shadowPlane.position.set(0, benchY + 0.13, 0);
+    shadowPlane.receiveShadow = true;
+    this.benchGroup.add(shadowPlane);
+
+    // 3. Rejilla métrica milimétrica de precisión
+    const grid = new THREE.PolarGridHelper(3.4, 16, 8, 48, 0x0284c7, 0x1e293b);
+    grid.position.set(0, benchY + 0.135, 0);
+    this.benchGroup.add(grid);
+
+    // 4. Anillo exterior luminoso de confinamiento láser
+    const ringGeo = new THREE.RingGeometry(3.38, 3.44, 64);
+    const ringMat = new THREE.MeshBasicMaterial({
+      color: 0x38bdf8,
+      side: THREE.DoubleSide,
+    });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.set(0, benchY + 0.14, 0);
+    this.benchGroup.add(ring);
+
+    // 5. Retícula holográfica interna giratoria con marcas angulares
+    const reticleGeo = new THREE.RingGeometry(1.6, 1.63, 32);
+    const reticleMat = new THREE.MeshBasicMaterial({
+      color: 0x00f5ff,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.6,
+    });
+    this.reticleRing = new THREE.Mesh(reticleGeo, reticleMat);
+    this.reticleRing.rotation.x = -Math.PI / 2;
+    this.reticleRing.position.set(0, benchY + 0.142, 0);
+    this.benchGroup.add(this.reticleRing);
+
+    // 6. Postes ópticos / pilares de contención en las 4 esquinas
+    const postGeo = new THREE.CylinderGeometry(0.06, 0.08, 1.4, 16);
+    const postMat = new THREE.MeshStandardMaterial({
+      color: 0x334155,
+      metalness: 0.9,
+      roughness: 0.2,
+    });
+    const tipGeo = new THREE.SphereGeometry(0.09, 16, 16);
+    const tipMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
+
+    const postDist = 2.6;
+    const postAngles = [Math.PI / 4, (3 * Math.PI) / 4, (5 * Math.PI) / 4, (7 * Math.PI) / 4];
+
+    postAngles.forEach((ang) => {
+      const px = Math.cos(ang) * postDist;
+      const pz = Math.sin(ang) * postDist;
+
+      const post = new THREE.Mesh(postGeo, postMat);
+      post.position.set(px, benchY + 0.7, pz);
+      post.castShadow = true;
+      post.receiveShadow = true;
+      this.benchGroup.add(post);
+
+      const tip = new THREE.Mesh(tipGeo, tipMat);
+      tip.position.set(px, benchY + 1.4, pz);
+      this.benchGroup.add(tip);
+    });
+
+    this.scene.add(this.benchGroup);
   }
 
   private setupMouseEvents(): void {
@@ -114,7 +217,7 @@ export class MolecularRenderer {
       this.isDragging = true;
       this.previousMousePosition = { x: e.clientX, y: e.clientY };
 
-      // Raycasting para selección
+      // Raycasting para selección táctil de átomos
       this.checkPointerClick(e);
     });
 
@@ -140,7 +243,7 @@ export class MolecularRenderer {
     dom.addEventListener('wheel', (e) => {
       e.preventDefault();
       const zoomFactor = e.deltaY * 0.003;
-      this.camera.position.z = Math.max(1.8, Math.min(18.0, this.camera.position.z + zoomFactor));
+      this.camera.position.z = Math.max(1.8, Math.min(16.0, this.camera.position.z + zoomFactor));
     });
   }
 
@@ -183,7 +286,7 @@ export class MolecularRenderer {
       const atom: AtomInstance = hit.userData.instance;
       this.selectedAtomId = atom.id;
 
-      // Resaltar átomo seleccionado
+      // Resaltar átomo seleccionado con halo dorado
       hit.material = MoleculeMaterials.getSelectedMaterial();
 
       if (this.onAtomSelect) {
@@ -212,7 +315,7 @@ export class MolecularRenderer {
   }
 
   /**
-   * Cambia el modo de representación molecular (Ball & Stick, Space Filling, Wireframe, Lewis).
+   * Cambia el modo de representación molecular.
    */
   public setRepresentation(rep: MolecularRepresentation): void {
     if (this.representation === rep) return;
@@ -220,8 +323,24 @@ export class MolecularRenderer {
     this.rebuildMeshes();
   }
 
+  /**
+   * Activa o desactiva la rotación automática de exhibición de laboratorio.
+   */
+  public toggleAutoRotate(forceState?: boolean): boolean {
+    this.autoRotate = forceState !== undefined ? forceState : !this.autoRotate;
+    return this.autoRotate;
+  }
+
+  /**
+   * Restablece la orientación del espécimen y centra la cámara.
+   */
+  public resetView(): void {
+    this.moleculeGroup.rotation.set(0, 0, 0);
+    this.camera.position.set(0, 0.8, 6.2);
+    this.centerMolecule();
+  }
+
   private rebuildMeshes(): void {
-    // 1. Limpiar geometría anterior
     while (this.moleculeGroup.children.length > 0) {
       const child = this.moleculeGroup.children[0];
       this.moleculeGroup.remove(child);
@@ -230,7 +349,7 @@ export class MolecularRenderer {
 
     if (!this.currentMolecule || this.currentMolecule.atoms.length === 0) return;
 
-    // 2. Crear mallas para cada átomo
+    // Crear mallas para cada átomo
     const atomMap = new Map<string, AtomInstance>();
     for (const atom of this.currentMolecule.atoms) {
       atomMap.set(atom.id, atom);
@@ -242,7 +361,7 @@ export class MolecularRenderer {
       this.atomMeshes.push(mesh);
     }
 
-    // 3. Crear enlaces
+    // Crear enlaces
     for (const bond of this.currentMolecule.bonds) {
       const atomA = atomMap.get(bond.atomAId);
       const atomB = atomMap.get(bond.atomBId);
@@ -255,22 +374,20 @@ export class MolecularRenderer {
     }
   }
 
-  private centerMolecule(): void {
+  public centerMolecule(): void {
     if (!this.currentMolecule || this.currentMolecule.atoms.length === 0) return;
 
-    // Calcular centro de masa geométrico de la molécula
     const box = new THREE.Box3().setFromObject(this.moleculeGroup);
     const center = new THREE.Vector3();
     box.getCenter(center);
 
-    // Centrar el grupo
+    // Centrar en el punto de levitación sobre la mesa óptica
     this.moleculeGroup.position.sub(center);
 
-    // Ajustar zoom para abarcar el tamaño
     const size = new THREE.Vector3();
     box.getSize(size);
     const maxDim = Math.max(size.x, size.y, size.z, 2.0);
-    this.camera.position.z = maxDim * 2.2;
+    this.camera.position.z = maxDim * 2.1;
   }
 
   public handleResize(): void {
@@ -286,9 +403,14 @@ export class MolecularRenderer {
   private animate = (): void => {
     this.animationFrameId = requestAnimationFrame(this.animate);
 
-    // Rotación suave continua cuando no se está arrastrando
-    if (!this.isDragging) {
-      this.moleculeGroup.rotation.y += 0.0015;
+    // Rotación de retícula holográfica de la mesa óptica
+    if (this.reticleRing) {
+      this.reticleRing.rotation.z += 0.003;
+    }
+
+    // Rotación suave del espécimen cuando no se arrastra
+    if (this.autoRotate && !this.isDragging) {
+      this.moleculeGroup.rotation.y += 0.0025;
     }
 
     this.renderer.render(this.scene, this.camera);

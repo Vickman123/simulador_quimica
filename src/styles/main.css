@@ -1,13 +1,13 @@
 /* ==========================================================================
-   VIRTUAL CHEMISTRY LAB (VCL) — STYLESHEET
+   VIRTUAL CHEMISTRY LAB (VCL) — COMPREHENSIVE LABORATORY STYLESHEET
    Vickora Labs | Scientific Simulation Platform | Web 3D + XR
    ========================================================================== */
 
 :root {
   --bg-deep: #050811;
   --bg-surface: #0a101f;
-  --bg-card: rgba(15, 23, 42, 0.75);
-  --bg-card-hover: rgba(30, 41, 59, 0.85);
+  --bg-card: rgba(13, 20, 36, 0.82);
+  --bg-card-hover: rgba(22, 33, 56, 0.9);
   --border-subtle: rgba(56, 189, 248, 0.18);
   --border-glow: rgba(56, 189, 248, 0.5);
 
@@ -32,8 +32,8 @@
   --radius-lg: 16px;
   --radius-xl: 24px;
 
-  --shadow-glow: 0 0 25px rgba(56, 189, 248, 0.15);
-  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 25px rgba(56, 189, 248, 0.2);
+  --shadow-card: 0 12px 36px -10px rgba(0, 0, 0, 0.7);
 }
 
 *, *::before, *::after {
@@ -50,25 +50,34 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   background-image: 
-    radial-gradient(circle at 15% 20%, rgba(37, 99, 235, 0.08) 0%, transparent 45%),
-    radial-gradient(circle at 85% 80%, rgba(56, 189, 248, 0.06) 0%, transparent 50%);
+    radial-gradient(circle at 15% 15%, rgba(37, 99, 235, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
+    linear-gradient(rgba(56, 189, 248, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.015) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
 }
 
 /* ==========================================================================
-   HEADER & NAVIGATION
+   HEADER & NAVIGATION (Physical Instrument Console)
    ========================================================================== */
 
 .vcl-header {
   position: sticky;
   top: 0;
   z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1.5rem;
-  background: rgba(7, 11, 20, 0.85);
+  padding: 0.6rem 1.25rem;
+  background: rgba(7, 11, 20, 0.94);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-subtle);
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.6);
+}
+
+.vcl-header-inner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1.25rem;
+  width: 100%;
 }
 
 .vcl-brand {
@@ -77,6 +86,8 @@ body {
   gap: 0.75rem;
   text-decoration: none;
   cursor: pointer;
+  flex-shrink: 0;
+  user-select: none;
 }
 
 .vcl-brand-logo {
@@ -88,7 +99,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.35);
+  transition: transform 0.2s ease;
+}
+
+.vcl-brand:hover .vcl-brand-logo {
+  transform: scale(1.05);
 }
 
 .vcl-brand-title {
@@ -113,10 +129,29 @@ body {
 
 .vcl-brand-subtitle {
   font-size: 0.68rem;
-  color: var(--accent-gold);
-  letter-spacing: 0.12em;
+  color: var(--accent-cyan);
+  letter-spacing: 0.08em;
   font-weight: 600;
   text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Pulsing LEDs */
+.vcl-led-live, .vcl-led-active, .vcl-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  display: inline-block;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulseLed 2s infinite ease-in-out;
+}
+
+@keyframes pulseLed {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
 }
 
 .vcl-nav-tabs {
@@ -124,12 +159,15 @@ body {
   align-items: center;
   gap: 0.35rem;
   overflow-x: auto;
-  max-width: 60vw;
-  padding: 0.2rem 0;
+  min-width: 0;
+  padding: 0.2rem 0.4rem;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-subtle) transparent;
 }
 
 .vcl-nav-tabs::-webkit-scrollbar {
-  height: 4px;
+  height: 3px;
 }
 .vcl-nav-tabs::-webkit-scrollbar-thumb {
   background: var(--border-subtle);
@@ -139,36 +177,38 @@ body {
 .vcl-tab-btn {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
   padding: 0.5rem 0.85rem;
   border-radius: var(--radius-sm);
-  background: transparent;
+  background: rgba(15, 23, 42, 0.4);
   border: 1px solid transparent;
   color: var(--text-muted);
   font-size: 0.82rem;
   font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .vcl-tab-btn:hover {
   color: #ffffff;
-  background: rgba(56, 189, 248, 0.08);
+  background: rgba(56, 189, 248, 0.1);
   border-color: var(--border-subtle);
 }
 
 .vcl-tab-btn.active {
   color: #ffffff;
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(37, 99, 235, 0.25));
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(37, 99, 235, 0.3));
   border-color: var(--accent-cyan);
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.3);
 }
 
 .vcl-header-actions {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .vcl-btn {
@@ -183,6 +223,7 @@ body {
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid transparent;
+  user-select: none;
 }
 
 .vcl-btn-primary {
@@ -197,13 +238,13 @@ body {
 }
 
 .vcl-btn-secondary {
-  background: rgba(30, 41, 59, 0.6);
+  background: rgba(30, 41, 59, 0.65);
   border-color: var(--border-subtle);
   color: var(--text-main);
 }
 
 .vcl-btn-secondary:hover {
-  background: rgba(51, 65, 85, 0.8);
+  background: rgba(51, 65, 85, 0.85);
   border-color: var(--accent-cyan);
 }
 
@@ -211,7 +252,7 @@ body {
   background: linear-gradient(135deg, #7c3aed, #4f46e5);
   color: #ffffff;
   border-color: #a855f7;
-  box-shadow: 0 0 15px rgba(168, 85, 247, 0.35);
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.4);
 }
 
 .vcl-btn-xr:hover {
@@ -226,38 +267,38 @@ body {
 .vcl-main-viewport {
   position: relative;
   min-height: calc(100vh - 65px);
-  padding: 1.5rem;
+  padding: 1.25rem;
 }
 
 /* ==========================================================================
-   CARDS & PANELS (Glassmorphism)
+   CARDS & PANELS (Physical Laboratory HUD)
    ========================================================================== */
 
 .vcl-card {
   background: var(--bg-card);
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(18px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: 1.5rem;
+  padding: 1.25rem;
   box-shadow: var(--shadow-card);
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .vcl-card:hover {
   border-color: var(--border-glow);
-  box-shadow: var(--shadow-card), var(--shadow-glow);
 }
 
-.vcl-badge {
+.vcl-badge, .vcl-badge-lab {
   display: inline-flex;
   align-items: center;
+  gap: 0.35rem;
   padding: 0.25rem 0.65rem;
-  border-radius: 9999px;
+  border-radius: 4px;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  background: rgba(56, 189, 248, 0.15);
+  letter-spacing: 0.08em;
+  background: rgba(56, 189, 248, 0.12);
   color: var(--accent-cyan);
   border: 1px solid rgba(56, 189, 248, 0.3);
 }
@@ -278,7 +319,7 @@ body {
               radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.15), transparent 40%);
   border: 1px solid var(--border-glow);
   border-radius: var(--radius-xl);
-  padding: 2.5rem;
+  padding: 2.2rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -287,7 +328,7 @@ body {
 
 .vcl-hero-banner h2 {
   font-family: var(--font-display);
-  font-size: 2.2rem;
+  font-size: 2.1rem;
   font-weight: 900;
   line-height: 1.15;
   margin-bottom: 0.75rem;
@@ -298,225 +339,581 @@ body {
 
 .vcl-hero-banner p {
   color: var(--text-muted);
-  font-size: 1.05rem;
-  line-height: 1.6;
-  max-width: 620px;
-  margin-bottom: 1.8rem;
-}
-
-.vcl-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-}
-
-.vcl-stat-box {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 1rem;
-  text-align: center;
-}
-
-.vcl-stat-val {
-  font-family: var(--font-display);
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: var(--accent-cyan);
-}
-
-.vcl-stat-lbl {
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  margin-top: 0.2rem;
-}
-
-.vcl-modules-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.25rem;
-}
-
-.vcl-module-card {
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-}
-
-.vcl-module-icon {
-  font-size: 1.8rem;
-  margin-bottom: 0.8rem;
-}
-
-.vcl-module-card h3 {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 0.4rem;
-}
-
-.vcl-module-card p {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  line-height: 1.5;
-  margin-bottom: 1.2rem;
 }
 
 /* ==========================================================================
-   PERIODIC TABLE (M01)
+   M05 — MOLECULAR BUILDER (Physical Laboratory Workstation Layout)
    ========================================================================== */
 
-.vcl-ptable-container {
+.vcl-builder-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr 340px;
+  grid-template-rows: 1fr auto;
+  gap: 1rem;
+  height: calc(100vh - 90px);
+}
+
+/* --- Panel Izquierdo: Rack de Elementos --- */
+.vcl-lab-rack {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  overflow-y: auto;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(10, 16, 31, 0.95) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), var(--shadow-card);
 }
 
-.vcl-ptable-controls {
+.vcl-rack-header {
+  margin-bottom: 1rem;
+}
+
+.vcl-lab-title {
+  font-size: 1.1rem;
+  color: #ffffff;
+  font-weight: 700;
+  margin-top: 0.4rem;
+}
+
+.vcl-element-vials-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.vcl-vial-btn {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  background: var(--bg-card);
-  padding: 1rem 1.5rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
+  gap: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--radius-sm);
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
 }
 
-.vcl-input-search {
-  background: rgba(15, 23, 42, 0.8);
+.vcl-vial-btn:hover {
+  background: rgba(51, 65, 85, 0.7);
+  border-color: var(--accent-cyan);
+  transform: translateY(-1px);
+}
+
+.vcl-vial-btn.active {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(37, 99, 235, 0.35));
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+}
+
+.vcl-vial-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.vcl-vial-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.vcl-vial-sym {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.1;
+}
+
+.vcl-vial-name {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.vcl-lab-field-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 0.4rem;
+}
+
+.vcl-all-elements-box {
+  margin-bottom: 1.25rem;
+}
+
+.vcl-lab-select {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.9);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  padding: 0.5rem 1rem;
   color: #ffffff;
-  font-size: 0.9rem;
-  min-width: 260px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.82rem;
 }
 
-.vcl-input-search:focus {
+.vcl-lab-select:focus {
   outline: none;
   border-color: var(--accent-cyan);
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
 }
 
-.vcl-ptable-grid {
-  display: grid;
-  grid-template-columns: repeat(18, minmax(52px, 1fr));
-  gap: 4px;
-  overflow-x: auto;
-  padding-bottom: 1rem;
+.vcl-bond-order-picker {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.vcl-element-cell {
-  aspect-ratio: 1 / 1.15;
-  border-radius: 6px;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 4px;
+.vcl-btn-group {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  user-select: none;
-  position: relative;
+  gap: 0.35rem;
 }
 
-.vcl-element-cell:hover {
-  transform: scale(1.14);
-  z-index: 20;
-  border-color: #ffffff;
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
-}
-
-.vcl-cell-top {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.65rem;
-  color: var(--text-dim);
-  font-family: var(--font-mono);
-}
-
-.vcl-cell-symbol {
-  font-size: 1.15rem;
-  font-weight: 800;
-  text-align: center;
-  color: #ffffff;
-}
-
-.vcl-cell-name {
-  font-size: 0.58rem;
-  text-align: center;
+.vcl-btn-bond-order {
+  padding: 0.45rem 0.65rem;
+  border-radius: var(--radius-sm);
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
 }
 
-/* ==========================================================================
-   MOLECULAR BUILDER (M05) & 3D CANVAS
-   ========================================================================== */
-
-.vcl-builder-layout {
-  display: grid;
-  grid-template-columns: 260px 1fr 320px;
-  grid-template-rows: 1fr 90px;
-  gap: 1rem;
-  height: calc(100vh - 120px);
+.vcl-btn-bond-order:hover {
+  color: #ffffff;
+  border-color: var(--accent-cyan);
 }
 
-.vcl-builder-palette {
-  grid-column: 1 / 2;
-  grid-row: 1 / 2;
-  overflow-y: auto;
+.vcl-btn-bond-order.active {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(37, 99, 235, 0.25));
+  border-color: var(--accent-cyan);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
 }
 
+/* --- Área Central: Mesa Óptica 3D --- */
 .vcl-builder-canvas-container {
-  grid-column: 2 / 3;
-  grid-row: 1 / 2;
   position: relative;
-  background: #070b14;
+  background: radial-gradient(circle at 50% 40%, #081124 0%, #050811 100%);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8), 0 0 25px rgba(56, 189, 248, 0.15);
   overflow: hidden;
+  cursor: grab;
 }
 
-.vcl-3d-canvas {
-  width: 100%;
-  height: 100%;
+.vcl-builder-canvas-container:active {
+  cursor: grabbing;
 }
 
-.vcl-canvas-overlay-top {
+.vcl-lab-hud-top {
   position: absolute;
   top: 1rem;
   left: 1rem;
+  right: 1rem;
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.6rem;
   z-index: 10;
+  pointer-events: none;
+  flex-wrap: wrap;
 }
 
-.vcl-builder-properties {
-  grid-column: 3 / 4;
-  grid-row: 1 / 2;
+.vcl-hud-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 6px;
+  background: rgba(7, 11, 20, 0.88);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
+
+.vcl-hud-id {
+  border-color: #10b981;
+  background: rgba(6, 20, 16, 0.88);
+}
+
+.vcl-led-id.identified {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+}
+
+.vcl-hud-substance-name {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+}
+
+.vcl-hud-lbl {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  font-weight: 700;
+}
+
+.vcl-hud-val {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #ffffff;
+  font-family: var(--font-mono);
+}
+
+.vcl-stage-quick-controls {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 10;
+  background: rgba(10, 16, 31, 0.88);
+  backdrop-filter: blur(16px);
+  padding: 0.45rem 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-glow);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.vcl-stage-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-sm);
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.vcl-stage-btn:hover {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: var(--accent-cyan);
+  transform: translateY(-1px);
+}
+
+/* --- Panel Derecho: Consola Analítica Espectrométrica --- */
+.vcl-lab-console {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(10, 16, 31, 0.95) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.vcl-console-top-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.85rem;
+}
+
+.vcl-console-status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #10b981;
+  letter-spacing: 0.08em;
+}
+
+.vcl-substance-id-card {
+  background: rgba(6, 20, 24, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.12);
+}
+
+.vcl-substance-header {
+  margin-bottom: 0.75rem;
+}
+
+.vcl-substance-flag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #10b981;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.25rem;
+}
+
+.vcl-substance-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.vcl-substance-formula {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent-cyan);
+}
+
+.vcl-substance-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  margin-bottom: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 0.6rem;
+}
+
+.vcl-meta-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.vcl-meta-k {
+  color: var(--text-dim);
+}
+
+.vcl-meta-v {
+  color: #ffffff;
+  font-weight: 600;
+  text-align: right;
+}
+
+.vcl-substance-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 0.6rem;
+}
+
+.vcl-instruments-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.vcl-instrument-readout {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+}
+
+.vcl-inst-lbl {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+
+.vcl-inst-val {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffffff;
+  font-family: var(--font-mono);
+}
+
+.vcl-unit {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+.vcl-validation-card {
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.vcl-validation-card.valid {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.vcl-validation-card.invalid {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.vcl-validation-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #10b981;
+  margin-bottom: 0.25rem;
+}
+
+.vcl-validation-card.invalid .vcl-validation-title {
+  color: #ef4444;
+}
+
+.vcl-val-err {
+  font-size: 0.74rem;
+  color: #fca5a5;
+  margin-top: 0.2rem;
+}
+
+.vcl-val-warn {
+  font-size: 0.74rem;
+  color: #fde047;
+  margin-top: 0.2rem;
+}
+
+.vcl-console-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.vcl-section-heading {
+  font-size: 0.85rem;
+  color: #ffffff;
+  font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+
+.vcl-atom-details-card {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.85rem;
+  font-size: 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.vcl-atom-detail-line {
+  display: flex;
+  justify-content: space-between;
+}
+
+.vcl-mono-coords {
+  font-family: var(--font-mono);
+  color: #ffffff;
+}
+
+.vcl-empty-atom-hint {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  line-height: 1.4;
+  padding: 0.4rem 0;
+}
+
+.vcl-bonds-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: 130px;
   overflow-y: auto;
 }
 
-.vcl-builder-toolbar {
+.vcl-bond-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.65rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.vcl-bond-item-row:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--accent-cyan);
+}
+
+.vcl-bond-atoms {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  color: #ffffff;
+}
+
+.vcl-bond-order-badge {
+  font-size: 0.7rem;
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+.vcl-bond-length {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent-cyan);
+}
+
+/* --- Panel Inferior: Barra de Herramientas de Laboratorio --- */
+.vcl-lab-bench-toolbar {
   grid-column: 1 / 4;
-  grid-row: 2 / 3;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  background: var(--bg-card);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.95), rgba(10, 16, 31, 0.95));
+  border: 1px solid rgba(56, 189, 248, 0.3);
   border-radius: var(--radius-lg);
-  padding: 0 1.5rem;
+  padding: 0.85rem 1.5rem;
+  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.5);
+}
+
+.vcl-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.vcl-btn-tactile {
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.4);
+  transition: all 0.1s ease;
+}
+
+.vcl-btn-tactile:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.vcl-toolbar-lbl {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+  margin-right: 0.2rem;
+}
+
+.vcl-alert-box-warning {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
 }
 
 /* ==========================================================================
@@ -527,7 +924,7 @@ body {
   position: fixed;
   inset: 0;
   z-index: 999;
-  background: rgba(5, 8, 17, 0.85);
+  background: rgba(5, 8, 17, 0.88);
   backdrop-filter: blur(16px);
   display: flex;
   align-items: center;
@@ -549,7 +946,7 @@ body {
   overflow-y: auto;
   padding: 2rem;
   position: relative;
-  box-shadow: 0 0 50px rgba(56, 189, 248, 0.2);
+  box-shadow: 0 0 50px rgba(56, 189, 248, 0.25);
 }
 
 .vcl-toast-container {
@@ -584,13 +981,10 @@ body {
    RESPONSIVE DESIGN
    ========================================================================== */
 
-@media (max-width: 1024px) {
-  .vcl-dashboard-hero {
-    grid-template-columns: 1fr;
-  }
+@media (max-width: 1080px) {
   .vcl-builder-layout {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 450px auto auto;
+    grid-template-rows: auto 460px auto auto;
     height: auto;
   }
   .vcl-builder-palette {
@@ -600,17 +994,24 @@ body {
   .vcl-builder-canvas-container {
     grid-column: 1 / 2;
     grid-row: 2 / 3;
-    height: 450px;
+    height: 460px;
   }
   .vcl-builder-properties {
     grid-column: 1 / 2;
     grid-row: 3 / 4;
   }
-  .vcl-builder-toolbar {
+  .vcl-lab-bench-toolbar {
     grid-column: 1 / 2;
     grid-row: 4 / 5;
     flex-wrap: wrap;
     padding: 1rem;
     height: auto;
+  }
+  .vcl-header-inner {
+    grid-template-columns: auto 1fr auto;
+    gap: 0.75rem;
+  }
+  .action-btn-text {
+    display: none;
   }
 }

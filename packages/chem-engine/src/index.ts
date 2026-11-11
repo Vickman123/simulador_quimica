@@ -11,6 +11,7 @@ export * from './electron/ElectronEngine.js';
 export * from './bonds/BondEngine.js';
 export * from './geometry/GeometryEngine.js';
 export * from './molecular/MolecularEngine.js';
+export * from './molecular/SubstanceIdentifier.js';
 export * from './reactions/ReactionEngine.js';
 export * from './energy/EnergyEngine.js';
 export * from './validation/ValidationEngine.js';

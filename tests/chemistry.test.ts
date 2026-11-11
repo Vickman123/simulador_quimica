@@ -168,6 +168,27 @@ describe('VCL — Suite de Pruebas Químicas', () => {
       assert.strictEqual(mBonded.formula, 'CH2');
       assert.ok(mBonded.molarMass > 14);
     });
+
+    it('debe identificar automáticamente Dióxido de Carbono (CO2) y auto-balancear dobles enlaces', () => {
+      let mol = MolecularEngine.createEmptyMolecule('Mesa Vacía');
+      const { molecule: m1, addedAtom: c } = MolecularEngine.addAtom(mol, 'C', [0, 0, 0]);
+      const { molecule: m2, addedAtom: o1 } = MolecularEngine.addAtom(m1, 'O', [-1.2, 0, 0]);
+      const { molecule: m3, addedAtom: o2 } = MolecularEngine.addAtom(m2, 'O', [1.2, 0, 0]);
+
+      let mBonded = MolecularEngine.addBond(m3, c.id, o1.id, 1);
+      mBonded = MolecularEngine.addBond(mBonded, c.id, o2.id, 1);
+
+      // Verificación de reconocimiento
+      assert.strictEqual(mBonded.formula, 'CO2');
+      assert.strictEqual(mBonded.name, 'Dióxido de Carbono');
+
+      // Auto-saturación de enlaces para la regla del octeto (O=C=O)
+      const saturated = MolecularEngine.autoSaturateBonds(mBonded);
+      assert.strictEqual(saturated.bonds.length, 2);
+      assert.strictEqual(saturated.bonds[0].order, 2);
+      assert.strictEqual(saturated.bonds[1].order, 2);
+      assert.strictEqual(saturated.geometryVSEPR, 'linear');
+    });
   });
 
   describe('5. REACTION ENGINE & STOICHIOMETRY', () => {
